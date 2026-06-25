@@ -126,3 +126,77 @@ WHO_AM_I = 0x68
 ACC_X / ACC_Y / ACC_Z 持续输出
 GYRO_X / GYRO_Y / GYRO_Z 持续输出
 晃动模块时数据发生变化
+
+
+---
+
+
+
+```markdown
+## Day11：基础姿态识别
+
+本阶段新增 gesture 姿态识别组件，将 MPU6050 原始数据转换为智能眼镜动作类型。
+
+新增组件：
+
+```text
+components/gesture/
+├── CMakeLists.txt
+├── gesture.c
+└── include/
+    └── gesture.h
+    ## Day12：OLED 状态显示
+
+本阶段新增 OLED UI 显示模块，用于显示智能眼镜控制端当前状态。
+
+显示内容：
+
+- Mode：当前模式
+- Gesture：当前识别动作
+- Cmd：映射后的控制命令
+- Status：系统状态
+
+OLED 和 MPU6050 共用 I2C 总线：
+
+| 设备 | I2C 地址 |
+|---|---:|
+| MPU6050 | 0x68 |
+| OLED | 0x3C |
+
+当前显示示例：
+
+```text
+MODE:CONTROL
+GEST:NONE
+CMD:NONE
+STATUS:OK
+
+---
+
+【面试考点】
+
+### 1. OLED 为什么要单独封装组件？
+
+因为 OLED 显示属于 UI 层，不应该和 `main.c` 或 MPU6050 驱动混在一起。封装成 `oled_ui` 后，主程序只需要调用 `oled_ui_show_status()`。
+
+### 2. OLED 和 MPU6050 为什么可以共用 I2C？
+
+因为 I2C 是总线结构，可以挂多个从设备。只要设备地址不同就可以共用 SDA/SCL。MPU6050 地址是 `0x68`，OLED 常见地址是 `0x3C`。
+
+### 3. 为什么 OLED 很重要？
+
+因为它让智能眼镜控制端具备可视化状态反馈，不再只依赖串口。后续演示时可以直接看到当前模式、动作和控制命令。
+
+---
+
+【明日任务】
+
+明天做 **Day13：加入按键模式切换**。
+
+核心任务：
+
+```text
+NORMAL / CONTROL 模式切换
+按键短按切模式
+长按触发 STOP
+OLED 显示当前模式
