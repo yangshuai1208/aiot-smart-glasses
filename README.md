@@ -200,3 +200,44 @@ NORMAL / CONTROL 模式切换
 按键短按切模式
 长按触发 STOP
 OLED 显示当前模式
+
+## Day13：按键模式切换
+
+本阶段新增 button 按键模块，用于增强智能眼镜控制端的人机交互能力。
+
+### 功能说明
+
+- 短按按键：切换 NORMAL / CONTROL 模式
+- 长按按键：触发 STOP 安全命令
+- OLED 显示当前 Mode / Gesture / Cmd / Status
+- CONTROL 模式下根据手势生成控制命令
+- NORMAL 模式下只显示姿态，不生成控制命令
+
+### 按键接线
+
+| ESP32-S3 | 按键模块 |
+|---|---|
+| 3V3 | VCC |
+| GND | GND |
+| GPIO4 | OUT / SIG / S |
+
+### 模式说明
+
+| 模式 | 说明 |
+|---|---|
+| NORMAL | 普通显示模式，只显示姿态，不生成控制命令 |
+| CONTROL | 控制模式，根据手势生成 OPEN / GRAB / RELEASE |
+| STOP | 长按按键触发的安全停止命令 |
+
+### 当前系统链路
+
+```text
+MPU6050 姿态采集
+        ↓
+gesture 手势识别
+        ↓
+button 按键模式控制
+        ↓
+cmd 命令生成
+        ↓
+OLED 状态显示

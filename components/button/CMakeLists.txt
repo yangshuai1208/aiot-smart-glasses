@@ -1,3 +1,3 @@
-idf_component_register(SRCS "mpu6050.c"
+idf_component_register(SRCS "button.c"
                        INCLUDE_DIRS "include"
                        REQUIRES driver)
