@@ -263,3 +263,12 @@ components/command/
 ├── command.c
 └── include/
     └── command.h
+
+## Day15：JSON 命令格式模块
+
+本阶段新增 json_builder 模块，用于将智能眼镜控制端的运行状态格式化为标准 JSON 字符串。
+
+### JSON 示例
+
+```json
+{"device":"smart_glasses_01","mode":"CONTROL","gesture":"NOD","cmd":"GRAB","status":"OK"}

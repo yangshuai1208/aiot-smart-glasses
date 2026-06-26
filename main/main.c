@@ -7,8 +7,13 @@
 #include "oled_ui.h"
 #include "button.h"
 #include "command.h"
+#include "json_builder.h"
 
 static const char *TAG = "APP_MAIN";
+
+#define DEVICE_NAME "smart_glasses_01"
+#define JSON_BUF_SIZE 160
+
 
 typedef enum
 {
@@ -28,10 +33,30 @@ static const char*mode_to_string(app_mode_t mode)
      }
 }
 
+static void print_json_status(app_mode_t mode,
+                              gesture_type_t gesture,
+                              command_type_t command,
+                              const char*status )
+{
+    char json_buf[JSON_BUF_SIZE];
+
+    esp_err_t ret=json_builder_build(json_buf,
+                                    sizeof(json_buf),
+                                    DEVICE_NAME,
+                                    mode_to_string(mode),
+                                    gesture,
+                                    command,
+                                    status);
+if(ret==ESP_OK){
+    ESP_LOGI(TAG,"JSON=%s",json_buf);
+}else{
+    ESP_LOGE(TAG,"Build JSON failed");
+ }
+}
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "AIoT Smart Glasses Day14 Start");
+    ESP_LOGI(TAG, "AIoT Smart Glasses Day15 Start");
 
     app_mode_t mode=APP_MODE_NORMAL;
     command_type_t command=COMMAND_NONE;
@@ -78,6 +103,8 @@ void app_main(void)
 
             oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,command_to_string(command),status);
 
+            print_json_status(mode,GESTURE_NONE,command,status);
+
             vTaskDelay(pdMS_TO_TICKS(500));
             continue;
         }
@@ -107,10 +134,17 @@ void app_main(void)
                     );
         oled_ui_show_status(mode_to_string(mode),gesture,command_to_string(command),status);
 
+        print_json_status(mode,gesture,command,status);
         }
         else{
             ESP_LOGE(TAG,"Read MPU6050 raw data failed");
+
+            status="ERR";
+            command=COMMAND_NONE;
+
             oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,command_to_string(COMMAND_NONE),"ERR");
+        
+              print_json_status(mode,GESTURE_NONE,command,status);
         }
         vTaskDelay(pdMS_TO_TICKS(500));
     }
