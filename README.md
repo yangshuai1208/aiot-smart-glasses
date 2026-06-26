@@ -241,3 +241,25 @@ button 按键模式控制
 cmd 命令生成
         ↓
 OLED 状态显示
+```markdown
+## Day14：command 命令生成模块
+
+本阶段新增 command 命令生成模块，用于将 gesture 手势识别结果转换为标准控制命令。
+
+### 功能说明
+
+- 将 LEFT 映射为 OPEN
+- 将 RIGHT 映射为 RELEASE
+- 将 NOD 映射为 GRAB
+- 将 SHAKE 映射为 NONE
+- 长按按键触发 STOP
+- main.c 不再直接处理命令映射逻辑
+
+### 新增组件
+
+```text
+components/command/
+├── CMakeLists.txt
+├── command.c
+└── include/
+    └── command.h

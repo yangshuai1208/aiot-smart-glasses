@@ -6,6 +6,7 @@
 #include "gesture.h"
 #include "oled_ui.h"
 #include "button.h"
+#include "command.h"
 
 static const char *TAG = "APP_MAIN";
 
@@ -20,40 +21,20 @@ static const char*mode_to_string(app_mode_t mode)
     switch(mode){
         case APP_MODE_CONTROL:
          return "CONTROL";
+
         case APP_MODE_NORMAL:
         default:
          return "NORMAL";
      }
 }
 
-static const char*cmd_from_gesture(gesture_type_t gesture)
-{
-    switch(gesture){
-        case GESTURE_LEFT:
-        return "OPEN";
-
-        case GESTURE_RIGHT:
-        return "RELEASE";
-
-        case GESTURE_NOD:
-        return "GRAB";
-        
-        case GESTURE_SHAKE:
-        return "NONE";
-
-        case GESTURE_NONE:
-        default:
-        return "NONE";
-        
-    }
-}
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "AIoT Smart Glasses Day13 Start");
+    ESP_LOGI(TAG, "AIoT Smart Glasses Day14 Start");
 
     app_mode_t mode=APP_MODE_NORMAL;
-    const char*cmd="NONE";
+    command_type_t command=COMMAND_NONE;
     const char*status="OK";
 
 
@@ -90,11 +71,12 @@ void app_main(void)
 
         if(event==BUTTON_EVENT_LONG_PRESS)
         {
-            cmd="STOP";
+            command=COMMAND_STOP;
             status="STOP";
 
-            ESP_LOGW(TAG,"Long press,STOP command");
-            oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,cmd,status);
+            ESP_LOGW(TAG,"Long press,command=%s",command_to_string(command));
+
+            oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,command_to_string(command),status);
 
             vTaskDelay(pdMS_TO_TICKS(500));
             continue;
@@ -107,28 +89,28 @@ void app_main(void)
             gesture_type_t gesture=gesture_detect(&data);
 
             if(mode==APP_MODE_CONTROL){
-                cmd=cmd_from_gesture(gesture);
+                command=command_from_gesture(gesture);
             }else{
-                cmd="NONE";
+                command=COMMAND_NONE;
             }
             status="OK";
             
 
             ESP_LOGI(TAG,
-                    "Mode=%s Gesture=%s Cmd=%s |ACC_X=%d ACC_Y=%d ACC_Z=%d",
+                    "Mode=%s Gesture=%s Command=%s |ACC_X=%d ACC_Y=%d ACC_Z=%d",
                     mode_to_string(mode),
                     gesture_to_string(gesture),
-                    cmd,
+                    command_to_string(command),
                     data.acc_x,
                     data.acc_y,
                     data.acc_z
                     );
-        oled_ui_show_status(mode_to_string(mode),gesture,cmd,status);
+        oled_ui_show_status(mode_to_string(mode),gesture,command_to_string(command),status);
 
         }
         else{
             ESP_LOGE(TAG,"Read MPU6050 raw data failed");
-            oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,"NONE","ERR");
+            oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,command_to_string(COMMAND_NONE),"ERR");
         }
         vTaskDelay(pdMS_TO_TICKS(500));
     }

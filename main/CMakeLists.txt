@@ -1,3 +1,3 @@
 idf_component_register(SRCS "main.c"
-     INCLUDE_DIRS "."
-                       REQUIRES mpu6050 gesture oled_ui button)
+                       INCLUDE_DIRS "."
+                       REQUIRES mpu6050 gesture oled_ui button command)
