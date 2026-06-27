@@ -8,6 +8,7 @@
 #include "button.h"
 #include "command.h"
 #include "json_builder.h"
+#include "uart_sender.h"
 
 static const char *TAG = "APP_MAIN";
 
@@ -49,6 +50,8 @@ static void print_json_status(app_mode_t mode,
                                     status);
 if(ret==ESP_OK){
     ESP_LOGI(TAG,"JSON=%s",json_buf);
+    
+    ret=uart_sender_send_json(json_buf);
 }else{
     ESP_LOGE(TAG,"Build JSON failed");
  }
@@ -81,6 +84,12 @@ void app_main(void)
     ESP_LOGE(TAG, "Button init failed");
     return;
      }
+
+     ret=uart_sender_init();
+     if(ret!=ESP_OK){
+        ESP_LOGE(TAG,"UART sender init failed");
+        return;
+    }
 
     while (1) {
         button_event_t event=button_get_event();
@@ -142,7 +151,7 @@ void app_main(void)
             status="ERR";
             command=COMMAND_NONE;
 
-            oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,command_to_string(COMMAND_NONE),"ERR");
+            oled_ui_show_status(mode_to_string(mode),GESTURE_NONE,command_to_string(COMMAND_NONE),status);
         
               print_json_status(mode,GESTURE_NONE,command,status);
         }
