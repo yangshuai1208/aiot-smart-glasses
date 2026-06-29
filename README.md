@@ -311,4 +311,15 @@ components/command/
 tools/linux_uart_receiver/
 ├── Makefile
 ├── README.md
-└── uart_receiver.c
+└── uart_receiver.c## Day18：Linux Gateway 命令分发模块
+
+本阶段新增 Linux Gateway 命令分发模块，用于将 ESP32-S3 智能眼镜控制端发来的 JSON cmd 字段转换为 STM32 灵动手执行端协议命令。
+
+### 新增模块
+
+```text
+tools/linux_uart_receiver/
+├── gateway_dispatcher.c
+├── gateway_dispatcher.h
+├── uart_receiver.c
+└── Makefile
