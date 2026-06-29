@@ -323,3 +323,142 @@ tools/linux_uart_receiver/
 ├── gateway_dispatcher.h
 ├── uart_receiver.c
 └── Makefile
+## Day19：Linux Gateway 到 STM32 串口发送模块
+
+Day19 新增 `stm32_sender` 模块，用于将 Linux Gateway 生成的 STM32 协议命令通过 UART 发送给 STM32 灵动手执行端。
+
+### 项目链路
+
+```text
+ESP32-S3 智能眼镜控制端
+        ↓
+UART JSON
+        ↓
+Linux UART Receiver
+        ↓
+Gateway Dispatcher
+        ↓
+STM32 Sender
+        ↓
+UART
+        ↓
+STM32 灵动手执行端
+```
+
+### 新增模块
+
+```text
+tools/linux_uart_receiver/
+├── uart_receiver.c
+├── gateway_dispatcher.c
+├── gateway_dispatcher.h
+├── stm32_sender.c
+├── stm32_sender.h
+└── Makefile
+```
+
+### 功能说明
+
+`stm32_sender` 模块主要负责三件事：
+
+```text
+1. 打开 STM32 串口设备
+2. 配置 115200 8N1 串口参数
+3. 发送 HAND_OPEN / HAND_GRAB / HAND_RELEASE / HAND_STOP 协议命令
+```
+
+### 协议命令映射
+
+| JSON cmd | Gateway cmd    | STM32 协议命令   |
+| -------- | -------------- | ------------ |
+| OPEN     | GW_CMD_OPEN    | HAND_OPEN    |
+| GRAB     | GW_CMD_GRAB    | HAND_GRAB    |
+| RELEASE  | GW_CMD_RELEASE | HAND_RELEASE |
+| STOP     | GW_CMD_STOP    | HAND_STOP    |
+| NONE     | GW_CMD_NONE    | HAND_NONE    |
+
+### 编译方式
+
+```bash
+cd tools/linux_uart_receiver
+make clean
+make
+```
+
+Makefile 中需要包含：
+
+```makefile
+SRCS = uart_receiver.c gateway_dispatcher.c stm32_sender.c
+```
+
+注意：Makefile 命令行前面必须是 Tab，不是空格。
+
+### 运行方式
+
+#### 无硬件测试
+
+```bash
+./uart_receiver --test
+```
+
+#### 只有 ESP32 输入
+
+```bash
+./uart_receiver /dev/ttyUSB0
+```
+
+#### ESP32 + STM32 双串口
+
+```bash
+./uart_receiver /dev/ttyUSB0 /dev/ttyUSB1
+```
+
+其中：
+
+```text
+/dev/ttyUSB0：接收 ESP32-S3 发来的 JSON 数据
+/dev/ttyUSB1：向 STM32 发送协议命令
+```
+
+### 正确实验现象
+
+收到 `OPEN` 命令时：
+
+```text
+RX JSON: {"device":"smart_glasses_01","mode":"CONTROL","gesture":"LEFT","cmd":"OPEN","status":"OK"}
+  cmd         = OPEN
+  GATEWAY CMD = OPEN
+  STM32 CMD   = HAND_OPEN
+  SEND STM32 = HAND_OPEN
+```
+
+收到 `GRAB` 命令时：
+
+```text
+GATEWAY CMD = GRAB
+STM32 CMD   = HAND_GRAB
+SEND STM32 = HAND_GRAB
+```
+
+收到 `STOP` 命令时：
+
+```text
+GATEWAY CMD = STOP
+STM32 CMD   = HAND_STOP
+SEND STM32 = HAND_STOP
+```
+
+### Day19 面试亮点
+
+Day19 将 Linux Gateway 从命令分发升级为命令转发。
+
+Linux 端可以接收 ESP32-S3 发来的 JSON，解析出 `cmd` 字段，再通过 `gateway_dispatcher` 转换为 STM32 协议命令，最后通过 `stm32_sender` 模块发送给 STM32 执行端。
+
+这使整个项目从单设备通信逐步扩展为：
+
+```text
+智能眼镜控制端 + Linux 网关 + STM32 执行端
+```
+
+具备了真实嵌入式系统中“多设备通信、协议转换、命令转发”的项目特征。
+

@@ -7,6 +7,7 @@
 #include <termios.h>
 
 #include "gateway_dispatcher.h"
+#include "stm32_sender.h"
 
 #define LINE_BUF_SIZE   256
 #define FIELD_BUF_SIZE    64
@@ -98,7 +99,7 @@ static int extract_json_field(const char *json,
     return 0;
 }
 
-static void handle_json_line(const char *line)
+static void handle_json_line(const char *line,int stm32_fd)
 {
     char cmd[FIELD_BUF_SIZE];
     char mode[FIELD_BUF_SIZE];
@@ -120,6 +121,15 @@ static void handle_json_line(const char *line)
 
         gateway_cmd_t gw_cmd=gateway_cmd_from_string(cmd);
         gateway_dispatcher_handle_cmd(gw_cmd);
+
+        const char*stm32_cmd=gateway_cmd_to_stm32_protocol(gw_cmd);
+
+        if(stm32_fd>=0)
+        {
+            stm32_sender_send_cmd(stm32_fd,stm32_cmd);
+        }
+
+
     }else{
         printf("cmd   =<not found>\n");
         gateway_dispatcher_handle_cmd(GW_CMD_NONE);
@@ -148,30 +158,50 @@ static void run_test_mode(void)
 
     for(int i=0;i<count;i++)
     {
-        handle_json_line(samples[i]);
+        handle_json_line(samples[i],-1);
     }
 }
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
-        printf("Usage: %s <uart_device>\n", argv[0]);
+        printf("Usage: %s <esp32_uart_device> [stm32_uart_device]\n", argv[0]);
         printf("Example: %s /dev/ttyUSB0\n", argv[0]);
+        printf("Example: %s /dev/ttyUSB0 /dev/ttyUSB1\n", argv[0]);
+        printf("Test: %s --test\n", argv[0]);
         return 1;
     }
-    if(strcmp(argv[1],"--test")==0){
+
+    if (strcmp(argv[1], "--test") == 0) {
         run_test_mode();
         return 0;
     }
-    const char *device = argv[1];
 
-    int fd = uart_open_and_config(device);
+    const char *esp32_device = argv[1];
+
+    int stm32_fd = -1;
+    if (argc >= 3) {
+        stm32_fd = stm32_sender_open(argv[2]);
+        if (stm32_fd < 0) {
+            printf("Warning: STM32 uart open failed, run in print-only mode\n");
+        }
+    }
+
+    int fd = uart_open_and_config(esp32_device);
     if (fd < 0) {
+        stm32_sender_close(stm32_fd);
         return 1;
     }
 
     printf("Linux UART JSON Receiver started\n");
-    printf("Device: %s\n", device);
+    printf("ESP32 Device: %s\n", esp32_device);
     printf("Baudrate: 115200\n");
+
+    if (stm32_fd >= 0) {
+        printf("STM32 sender enabled\n");
+    } else {
+        printf("STM32 sender disabled, print-only mode\n");
+    }
+
     printf("--------------------------------\n");
 
     char line_buf[LINE_BUF_SIZE];
@@ -186,7 +216,7 @@ int main(int argc, char *argv[])
                 line_buf[index] = '\0';
 
                 if (index > 0) {
-                    handle_json_line(line_buf);
+                    handle_json_line(line_buf, stm32_fd);
                 }
 
                 index = 0;
@@ -205,5 +235,7 @@ int main(int argc, char *argv[])
     }
 
     close(fd);
+    stm32_sender_close(stm32_fd);
+
     return 0;
 }
