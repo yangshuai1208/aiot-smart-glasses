@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -g
 TARGET=uart_receiver
-SRCS=uart_receiver.c
+SRCS=uart_receiver.c gateway_dispatcher.c
 
 all:
 	$(CC) $(CFLAGS) $(SRCS) -o $(TARGET)

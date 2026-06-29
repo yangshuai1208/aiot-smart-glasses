@@ -272,3 +272,43 @@ components/command/
 
 ```json
 {"device":"smart_glasses_01","mode":"CONTROL","gesture":"NOD","cmd":"GRAB","status":"OK"}
+
+## Day16：UART JSON 输出模块
+
+本阶段新增 uart_sender 模块，用于将 json_builder 生成的 JSON 字符串通过 UART1 输出。
+
+### UART 配置
+
+| 参数 | 值 |
+|---|---|
+| UART | UART1 |
+| TX | GPIO17 |
+| RX | GPIO18 |
+| Baudrate | 115200 |
+| Data bits | 8 |
+| Parity | None |
+| Stop bits | 1 |
+
+### 接线
+
+| ESP32-S3 | USB-TTL / Linux Gateway |
+|---|---|
+| GPIO17 TX | RX |
+| GPIO18 RX | TX |
+| GND | GND |
+
+### JSON 输出示例
+
+```json
+{"device":"smart_glasses_01","mode":"CONTROL","gesture":"NOD","cmd":"GRAB","status":"OK"}
+## Day17：Linux UART JSON 接收程序
+
+本阶段新增 Linux 端 UART JSON 接收程序，用于接收 ESP32-S3 智能眼镜控制端通过 UART1 发出的 JSON 数据。
+
+### 新增目录
+
+```text
+tools/linux_uart_receiver/
+├── Makefile
+├── README.md
+└── uart_receiver.c

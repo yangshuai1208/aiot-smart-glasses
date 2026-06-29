@@ -6,8 +6,10 @@
 #include <errno.h>
 #include <termios.h>
 
+#include "gateway_dispatcher.h"
+
 #define LINE_BUF_SIZE   256
-#define CMD_BUF_SIZE    64
+#define FIELD_BUF_SIZE    64
 
 static int uart_open_and_config(const char *device)
 {
@@ -98,10 +100,10 @@ static int extract_json_field(const char *json,
 
 static void handle_json_line(const char *line)
 {
-    char cmd[CMD_BUF_SIZE];
-    char mode[CMD_BUF_SIZE];
-    char gesture[CMD_BUF_SIZE];
-    char status[CMD_BUF_SIZE];
+    char cmd[FIELD_BUF_SIZE];
+    char mode[FIELD_BUF_SIZE];
+    char gesture[FIELD_BUF_SIZE];
+    char status[FIELD_BUF_SIZE];
 
     printf("RX JSON: %s\n", line);
 
@@ -115,29 +117,40 @@ static void handle_json_line(const char *line)
 
     if (extract_json_field(line, "cmd", cmd, sizeof(cmd)) == 0) {
         printf("  cmd     = %s\n", cmd);
+
+        gateway_cmd_t gw_cmd=gateway_cmd_from_string(cmd);
+        gateway_dispatcher_handle_cmd(gw_cmd);
+    }else{
+        printf("cmd   =<not found>\n");
+        gateway_dispatcher_handle_cmd(GW_CMD_NONE);
     }
 
     if (extract_json_field(line, "status", status, sizeof(status)) == 0) {
         printf("  status  = %s\n", status);
     }
 
-    if (extract_json_field(line, "cmd", cmd, sizeof(cmd)) == 0) {
-        if (strcmp(cmd, "OPEN") == 0) {
-            printf("  ACTION  = open hand\n");
-        } else if (strcmp(cmd, "GRAB") == 0) {
-            printf("  ACTION  = grab object\n");
-        } else if (strcmp(cmd, "RELEASE") == 0) {
-            printf("  ACTION  = release object\n");
-        } else if (strcmp(cmd, "STOP") == 0) {
-            printf("  ACTION  = emergency stop\n");
-        } else {
-            printf("  ACTION  = none\n");
-        }
-    }
 
     printf("--------------------------------\n");
 }
+static void run_test_mode(void)
+{
+    const char*samples[]={
+         "{\"device\":\"smart_glasses_01\",\"mode\":\"CONTROL\",\"gesture\":\"LEFT\",\"cmd\":\"OPEN\",\"status\":\"OK\"}",
+        "{\"device\":\"smart_glasses_01\",\"mode\":\"CONTROL\",\"gesture\":\"NOD\",\"cmd\":\"GRAB\",\"status\":\"OK\"}",
+        "{\"device\":\"smart_glasses_01\",\"mode\":\"CONTROL\",\"gesture\":\"RIGHT\",\"cmd\":\"RELEASE\",\"status\":\"OK\"}",
+        "{\"device\":\"smart_glasses_01\",\"mode\":\"CONTROL\",\"gesture\":\"NONE\",\"cmd\":\"STOP\",\"status\":\"STOP\"}",
+        "{\"device\":\"smart_glasses_01\",\"mode\":\"NORMAL\",\"gesture\":\"NONE\",\"cmd\":\"NONE\",\"status\":\"OK\"}"
+    };
+    int count=sizeof(samples)/sizeof(samples[0]);
 
+    printf("Linux Gateway Dispatcher Test Mode\n");
+    printf("-----------------------------------");
+
+    for(int i=0;i<count;i++)
+    {
+        handle_json_line(samples[i]);
+    }
+}
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
@@ -145,7 +158,10 @@ int main(int argc, char *argv[])
         printf("Example: %s /dev/ttyUSB0\n", argv[0]);
         return 1;
     }
-
+    if(strcmp(argv[1],"--test")==0){
+        run_test_mode();
+        return 0;
+    }
     const char *device = argv[1];
 
     int fd = uart_open_and_config(device);
