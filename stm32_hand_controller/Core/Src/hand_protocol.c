@@ -27,7 +27,7 @@ hand_action_t hand_protocol_parse(const char *cmd)
     }
     return HAND_ACTION_NONE;
 }
-const char*hand_action_to_string(hand_action_t action)
+const char *hand_action_to_string(hand_action_t action)
 {
     switch (action)
     {
@@ -49,23 +49,23 @@ void hand_action_execute(hand_action_t action)
 switch (action)
     {
     case HAND_ACTION_OPEN:
-          printf("ACTION: open hand\n");
+          printf("ACTION: open hand\r\n");
           break;
     case HAND_ACTION_GRAB:
-           printf("ACTION: grab object\n");
+           printf("ACTION: grab object\r\n");
            break;
 
     case HAND_ACTION_RELEASE:
-           printf("ACTION: release object\n");
+           printf("ACTION: release object\r\n");
            break;
 
     case HAND_ACTION_STOP:
-          printf("ACTION: emergency stop\n");
+          printf("ACTION: emergency stop\r\n");
           break;
 
     case HAND_ACTION_NONE:
     default:
-       printf("ACTION: no vaild command\n");
+       printf("ACTION: no valid command\r\n");
         break;
     }
 }

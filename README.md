@@ -581,3 +581,188 @@ STM32 端通过 `hand_protocol` 模块解析 Linux Gateway 发来的 `HAND_OPEN`
 
 这样后续舵机控制模块不需要关心字符串协议，只需要根据 `HAND_ACTION_OPEN`、`HAND_ACTION_GRAB` 等动作枚举执行对应动作，提升了代码清晰度和可维护性。
 
+## Day21：STM32F407 + PCA9685 单舵机控制
+
+本阶段使用 STM32F407VET6 作为灵动手执行端主控，通过 I2C1 控制 PCA9685 16 路舵机驱动板，并先使用 CH0 控制一个 MG90S 舵机。
+
+串口助手或 Linux Gateway 通过 USART1 向 STM32 发送 `HAND_OPEN`、`HAND_GRAB`、`HAND_RELEASE`、`HAND_STOP` 命令。STM32 接收后通过 `hand_protocol` 模块解析协议，再通过 `hand_servo` 模块映射为舵机角度，最终调用 `pca9685` 驱动输出 PWM 控制 MG90S 舵机动作。
+
+当前阶段先完成单舵机硬件闭环验证，后续扩展到 CH0~CH4 五个舵机组成完整机械手动作组。
+
+### 使用软件
+
+| 软件 / 工具         | 用途                             |
+| --------------- | ------------------------------ |
+| STM32CubeMX     | 配置 STM32F407VET6 外设，生成 Keil 工程 |
+| Keil MDK        | 编译、烧录、调试 STM32 工程              |
+| VSCode          | 整理项目代码、README、notes、GitHub 提交  |
+| 串口助手 / Linux 终端 | 发送 `HAND_xxx` 测试命令             |
+
+### Day21 硬件链路
+
+```text
+Linux Gateway / 串口助手
+        ↓ USART1
+STM32F407VET6
+        ↓ I2C1
+PCA9685 16 路舵机驱动板
+        ↓ CH0 PWM
+MG90S 舵机
+```
+
+### 接线说明
+
+```text
+STM32F407 PB6  → PCA9685 SCL
+STM32F407 PB7  → PCA9685 SDA
+STM32F407 3.3V → PCA9685 VCC
+STM32F407 GND  → PCA9685 GND
+
+5V 3A 电源 +  → PCA9685 V+
+5V 3A 电源 -  → PCA9685 GND
+STM32 GND     → PCA9685 GND
+
+MG90S 信号线    → PCA9685 CH0 Signal
+MG90S 红色线    → PCA9685 V+
+MG90S 棕/黑色线 → PCA9685 GND
+
+USB-TTL TX  → STM32 PA10 USART1_RX
+USB-TTL RX  → STM32 PA9  USART1_TX
+USB-TTL GND → STM32 GND
+```
+
+### CubeMX 配置
+
+```text
+SYS Debug：Serial Wire
+
+I2C1：
+PB6 → I2C1_SCL
+PB7 → I2C1_SDA
+Clock Speed：100kHz
+
+USART1：
+PA9  → USART1_TX
+PA10 → USART1_RX
+Baud Rate：115200
+Word Length：8 Bits
+Parity：None
+Stop Bits：1
+Hardware Flow Control：None
+
+NVIC：
+USART1 global interrupt Enable
+
+Project Manager：
+Toolchain / IDE：MDK-ARM
+```
+
+### Day21 新增模块
+
+```text
+Core/Inc/pca9685.h
+Core/Src/pca9685.c
+Core/Inc/hand_servo.h
+Core/Src/hand_servo.c
+```
+
+### 复用模块
+
+```text
+Core/Inc/hand_protocol.h
+Core/Src/hand_protocol.c
+```
+
+### 模块职责
+
+| 模块            | 职责                       |
+| ------------- | ------------------------ |
+| hand_protocol | 解析 `HAND_OPEN` 等串口命令     |
+| pca9685       | 通过 I2C 控制 PCA9685 PWM 输出 |
+| hand_servo    | 将动作映射为舵机角度               |
+| main.c        | 接收串口命令，调度动作执行            |
+
+### 命令与动作映射
+
+| 串口命令         | STM32 动作            | 舵机角度 |
+| ------------ | ------------------- | ---- |
+| HAND_OPEN    | HAND_ACTION_OPEN    | 30°  |
+| HAND_GRAB    | HAND_ACTION_GRAB    | 130° |
+| HAND_RELEASE | HAND_ACTION_RELEASE | 60°  |
+| HAND_STOP    | HAND_ACTION_STOP    | 90°  |
+
+### 测试方式
+
+串口参数：
+
+```text
+Baud Rate：115200
+Data Bits：8
+Stop Bits：1
+Parity：None
+Flow Control：None
+```
+
+发送命令：
+
+```text
+HAND_OPEN\n
+HAND_GRAB\n
+HAND_RELEASE\n
+HAND_STOP\n
+```
+
+Linux 终端测试示例：
+
+```bash
+sudo chmod 666 /dev/ttyUSB1
+
+stty -F /dev/ttyUSB1 115200 cs8 -cstopb -parenb -ixon -ixoff -crtscts raw
+
+printf "HAND_OPEN\n" > /dev/ttyUSB1
+printf "HAND_GRAB\n" > /dev/ttyUSB1
+printf "HAND_RELEASE\n" > /dev/ttyUSB1
+printf "HAND_STOP\n" > /dev/ttyUSB1
+```
+
+### 正确实验现象
+
+```text
+PCA9685 init OK
+```
+
+发送 `HAND_OPEN`：
+
+```text
+MG90S 舵机转到张开角度
+ACTION OK: HAND_ACTION_OPEN
+```
+
+发送 `HAND_GRAB`：
+
+```text
+MG90S 舵机转到抓取角度
+ACTION OK: HAND_ACTION_GRAB
+```
+
+发送 `HAND_RELEASE`：
+
+```text
+MG90S 舵机转到释放角度
+ACTION OK: HAND_ACTION_RELEASE
+```
+
+发送 `HAND_STOP`：
+
+```text
+MG90S 舵机回到中位
+ACTION OK: HAND_ACTION_STOP
+```
+
+### Day21 面试亮点
+
+Day21 将 STM32F407VET6 接入灵动手执行端，通过 I2C1 控制 PCA9685 16 路 PWM 舵机驱动板，并先使用 CH0 控制一个 MG90S 舵机。
+
+系统通过 USART1 接收 Linux Gateway 或串口助手发送的 `HAND_OPEN`、`HAND_GRAB`、`HAND_RELEASE`、`HAND_STOP` 命令。STM32 端将字符串协议解析为内部动作枚举，再将动作映射为舵机角度，最后通过 PCA9685 输出 PWM 控制舵机。
+
+该阶段完成了从“命令解析”到“真实硬件动作”的最小闭环，为后续五指动作组控制打下基础。

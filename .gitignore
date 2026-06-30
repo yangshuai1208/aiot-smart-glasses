@@ -4,3 +4,20 @@ sdkconfig.old
 *.log
 *.tmp
 __pycache__/
+# Keil MDK generated files
+Objects/
+Listings/
+*.uvoptx
+*.bak
+*.dep
+*.crf
+*.o
+*.d
+*.axf
+*.hex
+*.map
+*.lst
+*.lnp
+
+# STM32CubeMX backup files
+*.mxproject.bak

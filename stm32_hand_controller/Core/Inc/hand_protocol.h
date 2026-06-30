@@ -11,7 +11,7 @@ typedef enum
 }hand_action_t;
 
 hand_action_t hand_protocol_parse(const char *cmd);
-const char*hand_action_to_string(hand_action_t action);
+const char *hand_action_to_string(hand_action_t action);
 void hand_action_execute(hand_action_t action);
 
 #endif
