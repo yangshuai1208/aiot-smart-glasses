@@ -766,3 +766,11 @@ Day21 将 STM32F407VET6 接入灵动手执行端，通过 I2C1 控制 PCA9685 16
 系统通过 USART1 接收 Linux Gateway 或串口助手发送的 `HAND_OPEN`、`HAND_GRAB`、`HAND_RELEASE`、`HAND_STOP` 命令。STM32 端将字符串协议解析为内部动作枚举，再将动作映射为舵机角度，最后通过 PCA9685 输出 PWM 控制舵机。
 
 该阶段完成了从“命令解析”到“真实硬件动作”的最小闭环，为后续五指动作组控制打下基础。
+
+## Day22：PCA9685 五舵机动作组控制
+
+本阶段在 Day21 单舵机控制基础上，将 PCA9685 控制通道从 CH0 扩展到 CH0~CH4，对应灵动手五个 MG90S 舵机。
+
+系统继续通过 USART1 接收 `HAND_OPEN`、`HAND_GRAB`、`HAND_RELEASE`、`HAND_STOP` 命令。STM32 端通过 `hand_protocol` 解析命令，再由 `hand_servo` 模块将动作映射为五个舵机的角度数组，最终调用 `pca9685` 驱动依次设置 CH0~CH4 的 PWM 输出。
+
+当前阶段完成了五舵机动作组基础版，为后续机械手结构安装、角度校准和动作平滑控制打基础。

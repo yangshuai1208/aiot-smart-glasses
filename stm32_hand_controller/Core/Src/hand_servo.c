@@ -1,13 +1,58 @@
 #include "hand_servo.h"
 #include "pca9685.h"
 
-#define HAND_SERVO_CHANNEL	0
+#define HAND_SERVO_NUM	5
 
-#define HAND_OPEN_ANGEL			30
-#define HAND_GRAB_ANGEL			130
-#define HAND_RELEASE_ANGEL	60
-#define HAND_STOP_ANGEL			90
 
+#define THUMB_SERVO_CHANNEL	0
+#define INDEX_SERVO_CHANNEL	1
+#define MIDDLE_SERVO_CHANNEL	2
+#define RING_SERVO_CHANNEL	3
+#define LITTLE_SERVO_CHANNEL	4
+
+static const uint8_t hand_servo_channels[HAND_SERVO_NUM]=
+{
+	
+	THUMB_SERVO_CHANNEL,	
+	INDEX_SERVO_CHANNEL,	
+	MIDDLE_SERVO_CHANNEL,	
+	RING_SERVO_CHANNEL,	
+	LITTLE_SERVO_CHANNEL
+};
+static const uint16_t hand_open_angles[HAND_SERVO_NUM]=
+{
+	30,30,30,30,30
+};
+static const uint16_t hand_grab_angles[HAND_SERVO_NUM]=
+{
+	130,130,130,130,130
+};
+static const uint16_t hand_release_angles[HAND_SERVO_NUM]=
+{
+	60,60,60,60,60
+};
+
+static const uint16_t hand_stop_angles[HAND_SERVO_NUM]=
+{
+	90,90,90,90,90
+};
+static HAL_StatusTypeDef hand_servo_apply_angles(const uint16_t angles[])
+{
+	HAL_StatusTypeDef ret;
+	
+	for(uint8_t i=0;i<HAND_SERVO_NUM;i++)
+	{
+		ret=pca9685_set_servo_angle(hand_servo_channels[i],angles[i]);
+		if(ret!=HAL_OK)
+		{
+			return ret;
+		}
+		
+		
+		HAL_Delay(50);
+	}
+	return HAL_OK;
+}
 HAL_StatusTypeDef hand_servo_init(I2C_HandleTypeDef *hi2c)
 {
 	HAL_StatusTypeDef ret;
@@ -17,30 +62,30 @@ HAL_StatusTypeDef hand_servo_init(I2C_HandleTypeDef *hi2c)
 	{
 		return ret;
 	}
-	return pca9685_set_servo_angle(HAND_SERVO_CHANNEL,HAND_STOP_ANGEL);
+	return hand_servo_set_all_stop();
 }
+HAL_StatusTypeDef hand_servo_set_all_stop(void)
+{
+	return hand_servo_apply_angles(hand_stop_angles);
+}
+
 HAL_StatusTypeDef hand_servo_apply_action(hand_action_t action)
 {
-	uint16_t angle;
 	
 	switch(action){
 		case HAND_ACTION_OPEN:
-			angle=HAND_OPEN_ANGEL;
-			break;
+			return hand_servo_apply_angles(hand_open_angles);
 		case HAND_ACTION_GRAB:
-			angle=HAND_GRAB_ANGEL;
-			break;
+				return hand_servo_apply_angles(hand_grab_angles);
+		
 		case HAND_ACTION_RELEASE:
-			angle=HAND_RELEASE_ANGEL;
-			break;
+					return hand_servo_apply_angles(hand_release_angles);
 		case HAND_ACTION_STOP:
-			angle=HAND_STOP_ANGEL;
-			break;
+				return hand_servo_apply_angles(hand_stop_angles);
+		
 		
 		case HAND_ACTION_NONE:
 		default:
-			angle=HAND_STOP_ANGEL;
-			break;
+				return hand_servo_apply_angles(hand_stop_angles);
 	}
-	return pca9685_set_servo_angle(HAND_SERVO_CHANNEL,angle);
 }
