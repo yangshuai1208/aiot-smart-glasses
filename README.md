@@ -790,3 +790,12 @@ Day21 将 STM32F407VET6 接入灵动手执行端，通过 I2C1 控制 PCA9685 16
 
 ```json
 {"device":"glasses01","cmd":"OPEN","seq":1}
+
+## Day25：Linux Gateway MQTT 订阅与命令解析
+
+本阶段实现 Linux Gateway 的 MQTT 订阅功能。Linux 端使用 `libmosquitto` 编写 MQTT 客户端，订阅 `aiot/glasses/cmd` Topic，接收 ESP32-S3 智能眼镜控制端发布的 JSON 命令。
+
+MQTT Payload 示例：
+
+```json
+{"device":"glasses01","cmd":"OPEN","seq":1}
