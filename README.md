@@ -782,3 +782,11 @@ Day21 将 STM32F407VET6 接入灵动手执行端，通过 I2C1 控制 PCA9685 16
 系统为 CH0~CH4 五个 MG90S 舵机建立了独立的安全角度范围，并通过 `finger_min_angles` 和 `finger_max_angles` 对目标角度进行限幅，避免机械手结构卡死和舵机堵转。
 
 同时，系统使用 `current_angles` 记录每个舵机当前角度，通过小步进和平滑延时的方式逐步移动到目标角度，避免舵机突然大幅度跳转。OPEN、GRAB、RELEASE、STOP 四类动作均使用角度数组管理，方便后续根据机械手实际装配方向和拉线松紧进行单独校准。
+## Day24：ESP32-S3 MQTT 发布控制命令
+
+本阶段将 ESP32-S3 智能眼镜控制端接入 MQTT 通信链路。ESP32-S3 连接 WiFi 后，通过 ESP-MQTT 客户端连接到 MQTT Broker，并向 `aiot/glasses/cmd` Topic 发布控制命令。
+
+当前发布的 MQTT Payload 使用 JSON 格式：
+
+```json
+{"device":"glasses01","cmd":"OPEN","seq":1}
