@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <errno.h>
 
 static int g_serial_fd=-1;
 
@@ -98,6 +99,26 @@ int serial_sender_send_line(const char * line)
     printf("UART SEND  =%s",buf);
 
     return 0;
+}
+int serial_sender_send_line_retry(const char * line,int retry_count)
+{
+    if(retry_count<=0)
+    {
+        retry_count=1;
+    }
+    for(int i=0;i<retry_count;i++)
+    {
+        if(serial_sender_send_line(line)==0)
+        {
+            return 0;
+        }
+        printf("UART retry %d/%d failed,cmd=%s\n",
+        i+1,
+     retry_count,
+     line);
+     usleep(100*1000);
+    }
+    return -1;
 }
 void serial_sender_close(void)
 {
