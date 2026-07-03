@@ -799,3 +799,23 @@ MQTT Payload 示例：
 
 ```json
 {"device":"glasses01","cmd":"OPEN","seq":1}
+## Day26：Linux Gateway MQTT 到 STM32 串口转发
+
+本阶段在 Day25 的 MQTT 订阅和 JSON 解析基础上，新增 Linux 串口发送模块 `serial_sender`。Linux Gateway 收到 `aiot/glasses/cmd` Topic 中的 JSON 命令后，提取 `cmd` 字段，并转换为 STM32 执行端协议。
+
+| MQTT cmd | STM32 UART 命令 |
+|---|---|
+| OPEN | HAND_OPEN\n |
+| GRAB | HAND_GRAB\n |
+| RELEASE | HAND_RELEASE\n |
+| STOP | HAND_STOP\n |
+
+Linux 串口参数：
+
+```text
+device: /dev/ttyUSB0
+baudrate: 115200
+data bits: 8
+parity: none
+stop bits: 1
+flow control: none

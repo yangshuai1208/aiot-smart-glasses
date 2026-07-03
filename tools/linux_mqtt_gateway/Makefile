@@ -3,7 +3,7 @@ CFLAGS=-Wall -Wextra -g
 LDFLAGS=-lmosquitto
 
 TARGET=mqtt_gateway
-SRCS=mqtt_gateway.c
+SRCS=mqtt_gateway.c serial_sender.c
 
 all:$(TARGET)
 

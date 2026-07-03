@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mosquitto.h>
+#include "serial_sender.h"
 
 #define DEFAULT_BROKER_HOST "127.0.0.1"
 #define DEFAULT_BROKER_PORT 1883
 #define DEFAULT_TOPIC   "aiot/glasses/cmd"
+#define DEFAULT_SERIAL_DEVICE "/dev/ttyUSB0"
+#define DEFAULT_SERIAL_BAUD 115200
 
 #define CMD_BUF_SIZE    32
 
@@ -83,9 +86,15 @@ static void handle_payload(const char*payload)
         printf("STM32 CMD  =HAND_NONE\n");
         return;
     }
-    printf("CMD =%s\n",cmd);
-    printf("STM32   CMD  =%s\n",cmd_to_stm32_protocol(cmd));
+    const char *stm32_cmd=cmd_to_stm32_protocol(cmd);
 
+    printf("CMD =%s\n",cmd);
+    printf("STM32   CMD  =%s\n",stm32_cmd);
+
+    if(strcmp(stm32_cmd,"HAND_NONE")!=0)
+    {
+        serial_sender_send_line(stm32_cmd);
+    }
 }
 static void on_connect(struct mosquitto*mosq,
                         void *userdata,
