@@ -819,3 +819,20 @@ data bits: 8
 parity: none
 stop bits: 1
 flow control: none
+
+## Day27：完整链路联调
+
+本阶段完成 AIoT 智能眼镜控制端到灵动手执行端的完整链路联调。
+
+完整数据链路如下：
+
+```text
+ESP32-S3 智能眼镜
+        ↓ WiFi / MQTT
+Linux Gateway
+        ↓ UART
+STM32F407VET6
+        ↓ I2C
+PCA9685
+        ↓ PWM
+五个 MG90S 舵机
