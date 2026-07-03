@@ -866,3 +866,40 @@ STOP 急停优先
 UART 重试发送
         ↓
 STM32 执行
+
+---
+
+## Day29：项目文档与面试包装
+
+本阶段对 AIoT 智能眼镜 + 具身智能灵动手控制系统进行项目文档整理和面试包装。
+
+### 新增文档
+
+| 文件 | 内容 |
+|---|---|
+| `docs/architecture.md` | 系统总体架构和模块职责 |
+| `docs/hardware_connection.md` | 硬件清单和接线说明 |
+| `docs/mqtt_protocol.md` | MQTT Topic、JSON Payload 和命令映射 |
+| `docs/ota_design.md` | ESP32-S3 OTA 后续预留设计 |
+| `docs/interview_script.md` | 项目 1 分钟 / 3 分钟面试讲解稿 |
+| `notes/day29.md` | Day29 学习记录 |
+
+### 项目完整链路
+
+```text
+ESP32-S3 智能眼镜控制端
+        ↓ WiFi / MQTT
+Linux Gateway 网关
+        ↓ UART
+STM32F407VET6 灵动手执行端
+        ↓ I2C
+PCA9685 16 路 PWM 舵机驱动
+        ↓ PWM
+五个 MG90S 舵机
+```
+
+### Day29 总结
+
+Day29 的重点不是继续增加驱动代码，而是把项目整理成可以展示、可以讲解、可以写进简历的工程项目。
+
+本阶段完成了项目架构说明、硬件连接说明、MQTT 协议说明、OTA 预留设计和面试讲解稿，为 Day30 最终验收和简历整理做准备。
