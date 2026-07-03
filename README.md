@@ -903,3 +903,46 @@ PCA9685 16 路 PWM 舵机驱动
 Day29 的重点不是继续增加驱动代码，而是把项目整理成可以展示、可以讲解、可以写进简历的工程项目。
 
 本阶段完成了项目架构说明、硬件连接说明、MQTT 协议说明、OTA 预留设计和面试讲解稿，为 Day30 最终验收和简历整理做准备。
+---
+
+## Day30：最终验收与项目收尾
+
+本阶段完成 AIoT 智能眼镜 + 具身智能灵动手控制系统的最终验收、演示视频脚本、最终测试报告和简历项目描述整理。
+
+### 新增文档
+
+| 文件 | 内容 |
+|---|---|
+| `docs/final_test_report.md` | 最终测试报告 |
+| `docs/demo_script.md` | 演示视频脚本 |
+| `docs/resume_description.md` | 简历项目描述 |
+| `notes/day30.md` | Day30 学习记录 |
+
+### 最终完整链路
+
+```text
+ESP32-S3 智能眼镜控制端
+        ↓ WiFi / MQTT
+Linux Gateway 网关
+        ↓ UART
+STM32F407VET6 灵动手执行端
+        ↓ I2C
+PCA9685 16 路 PWM 舵机驱动
+        ↓ PWM
+五个 MG90S 舵机
+```
+
+### 最终验收内容
+
+1. ESP32-S3 WiFi / MQTT 连接测试。
+2. Linux Gateway MQTT 订阅测试。
+3. Gateway JSON 解析和协议转换测试。
+4. UART 转发 STM32 测试。
+5. STM32 控制 PCA9685 测试。
+6. 五个 MG90S 舵机 OPEN / GRAB / RELEASE / STOP 动作测试。
+7. 重复命令去重测试。
+8. STOP 急停优先级测试。
+
+### 项目总结
+
+本项目完成了从 ESP32-S3 智能眼镜手势输入，到 Linux Gateway 协议转换，再到 STM32F407 控制五个 MG90S 舵机执行动作的完整闭环。项目覆盖 ESP32、Linux、STM32 三端开发，涉及 WiFi、MQTT、UART、I2C、PWM 等多种通信和控制方式，具备作为嵌入式秋招核心项目展示的基础。
