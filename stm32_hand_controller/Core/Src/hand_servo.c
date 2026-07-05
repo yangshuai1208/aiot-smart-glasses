@@ -30,7 +30,7 @@ static const uint16_t finger_max_angles[HAND_SERVO_NUM] =
 };
 
 /*
- * current_angles åé¢éœ€è¦è¢«ä¿®æ”¹ï¼Œæ‰€ä»¥ä¸èƒ½å†™ const
+ * current_angles ºóÃæĞèÒª±»ĞŞ¸Ä£¬ËùÒÔ²»ÄÜĞ´ const
  */
 static uint16_t current_angles[HAND_SERVO_NUM] =
 {
@@ -84,7 +84,7 @@ static HAL_StatusTypeDef hand_servo_move_one_smooth(uint8_t index, uint16_t targ
     uint8_t channel = hand_servo_channels[index];
 
     /*
-     * è¿™é‡Œæ˜¯é™åˆ¶ç›®æ ‡è§’åº¦ï¼Œä¸æ˜¯æ”¹æˆé€šé“å·
+     * ÕâÀïÊÇÏŞÖÆÄ¿±ê½Ç¶È£¬²»ÊÇ¸Ä³ÉÍ¨µÀºÅ
      */
     target_angle = hand_servo_limit_angle(index, target_angle);
 

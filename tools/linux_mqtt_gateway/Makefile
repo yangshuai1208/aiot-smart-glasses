@@ -1,13 +1,13 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -g
-LDFLAGS=-lmosquitto
+CC = gcc
+CFLAGS = -Wall -Wextra -g -pthread
+LDFLAGS = -lmosquitto -pthread
 
-TARGET=mqtt_gateway
-SRCS=mqtt_gateway.c serial_sender.c
+TARGET = mqtt_gateway
+SRCS = mqtt_gateway.c serial_sender.c
 
-all:$(TARGET)
+all: $(TARGET)
 
-$(TARGET):$(SRCS)
+$(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) $(SRCS) -o $(TARGET) $(LDFLAGS)
 
 clean:

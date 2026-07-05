@@ -66,6 +66,7 @@ volatile hand_action_t hand_pending_action=HAND_ACTION_NONE;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+static const char * hand_action_to_ack_name(hand_action_t  action);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -125,20 +126,21 @@ int main(void)
   {
 		    if (hand_action_pending) {
         hand_action_t action;
-
+				HAL_StatusTypeDef action_ret;
+				char ack_msg[64];
+					
         __disable_irq();
         action = hand_pending_action;
         hand_action_pending = 0;
         __enable_irq();
 
-        if (hand_servo_apply_action(action) == HAL_OK) {
-            char msg[64];
-            snprintf(msg, sizeof(msg), "ACTION OK: %s\r\n", hand_action_to_string(action));
-            HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), 100);
-        } else {
-            char msg[] = "ACTION FAIL\r\n";
-            HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), 100);
-        }
+				action_ret=hand_servo_apply_action(action);
+					
+     
+					snprintf(ack_msg, sizeof(ack_msg), "ACTION:%s %s\r\n", hand_action_to_ack_name(action),(action_ret==HAL_OK)?"OK":"FAIL");
+            HAL_UART_Transmit(&huart1, (uint8_t *)ack_msg, strlen(ack_msg), 100);
+      
+    
     }
 
     /* USER CODE END WHILE */
@@ -190,6 +192,28 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+static const char * hand_action_to_ack_name(hand_action_t action)
+{
+	switch(action){
+		case	HAND_ACTION_OPEN:
+			return "HAND_OPEN";
+		
+		case	HAND_ACTION_GRAB:
+			return "HAND_GRAB";
+				
+		case	HAND_ACTION_RELEASE:
+			return "HAND_RELEASE";
+						
+		case	HAND_ACTION_STOP:
+			return "HAND_STOP";
+								
+		case	HAND_ACTION_NONE:
+		default:
+			return "HAND_NONE";
+	}
+}		
+
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1) {
