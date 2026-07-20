@@ -21,3 +21,6 @@ Listings/
 
 # STM32CubeMX backup files
 *.mxproject.bak
+
+#本地WIFI敏感配置
+components/wifi_manager/include/wifi_credentials.h
