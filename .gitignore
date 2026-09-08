@@ -24,3 +24,6 @@ Listings/
 
 #本地WIFI敏感配置
 components/wifi_manager/include/wifi_credentials.h
+
+# Local build/debug output
+build_error.txt
