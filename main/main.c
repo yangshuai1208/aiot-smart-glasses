@@ -11,6 +11,8 @@
 #include "uart_sender.h"
 #include "wifi_manager.h"
 #include "mqtt_sender.h"
+#include "ota_manager.h"
+
 
 static const char *TAG = "day24_main";
 
@@ -95,6 +97,16 @@ void app_main(void)
 
  
     vTaskDelay(pdMS_TO_TICKS(3000));
+
+    esp_err_t ota_ret =
+    ota_manager_print_partition_info();
+
+    if (ota_ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "OTA partition check failed");
+    }
+
+
 
     
     esp_err_t ret = mpu6050_init();

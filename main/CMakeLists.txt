@@ -11,4 +11,5 @@ idf_component_register(
         uart_sender
         wifi_manager
         mqtt_sender
+        ota_manager
 )
