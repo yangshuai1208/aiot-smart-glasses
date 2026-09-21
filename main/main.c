@@ -1,6 +1,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include <stdbool.h>
 
 #include "mpu6050.h"
 #include "gesture.h"
@@ -112,12 +113,14 @@ void app_main(void)
     esp_err_t ret = mpu6050_init();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "MPU6050 init failed");
+        ota_manager_check_and_confirm_app(false);
         return;
     }
 
     ret = oled_ui_init();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "OLED init failed");
+        ota_manager_check_and_confirm_app(false);
         return;
     }
 
@@ -125,6 +128,7 @@ void app_main(void)
     ret = button_init();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Button init failed");
+        ota_manager_check_and_confirm_app(false);
         return;
     }
 
@@ -132,10 +136,19 @@ void app_main(void)
     ret = uart_sender_init();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "UART sender init failed");
+        ota_manager_check_and_confirm_app(false);
         return;
     }
 
     ESP_LOGI(TAG, "All modules init OK");
+
+    ret=ota_manager_check_and_confirm_app(true);
+    if(ret!=ESP_OK)
+    {
+        ESP_LOGE(TAG,
+        "OTA app confirmation failed :%s",
+        esp_err_to_name(ret));
+    }
 
     while (1) {
         button_event_t event = button_get_event();

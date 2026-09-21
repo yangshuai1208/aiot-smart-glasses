@@ -114,8 +114,15 @@ esp_err_t ota_writer_finish(void)
         
         return ret;
     }
-    ESP_LOGI(TAG,"OTA finished ,next partition =%s",update_partition->label);
-    return ESP_OK;
+   ESP_LOGI(
+    TAG,
+    "OTA finished, next partition=%s",
+    update_partition->label);
+
+        ota_handle = 0;
+        update_partition = NULL;
+
+        return ESP_OK;
 }
 esp_err_t  ota_writer_abort(void)
 {
