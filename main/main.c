@@ -13,7 +13,7 @@
 #include "wifi_manager.h"
 #include "mqtt_sender.h"
 #include "ota_manager.h"
-
+#include "esp_app_desc.h"
 
 static const char *TAG = "day24_main";
 
@@ -85,6 +85,14 @@ static void publish_mqtt_command(command_type_t command, int force)
 
 void app_main(void)
 {
+
+    const esp_app_desc_t *app_desc =
+    esp_app_get_description();
+
+    ESP_LOGI(
+    TAG,
+    "Firmware version=%s",
+    app_desc->version);
     ESP_LOGI(TAG, "Day24 ESP32-S3 MQTT publisher start");
 
     app_mode_t mode = APP_MODE_NORMAL;
@@ -117,13 +125,13 @@ void app_main(void)
         return;
     }
 
-    ret = oled_ui_init();
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "OLED init failed");
-        ota_manager_check_and_confirm_app(false);
-        return;
+  ret = oled_ui_init();
+    if (ret != ESP_OK)
+    {
+    ESP_LOGW(
+        TAG,
+        "OLED init failed, continue OTA test");
     }
-
    
     ret = button_init();
     if (ret != ESP_OK) {
