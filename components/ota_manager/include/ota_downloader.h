@@ -2,4 +2,4 @@
 
 #include "esp_err.h"
 
-esp_err_t ota_download_start(const char*url);
+esp_err_t ota_downloader_start(const char *url);

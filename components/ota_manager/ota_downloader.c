@@ -6,12 +6,15 @@
 #include "esp_http_client.h"
 #include "esp_log.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define OTA_DOWNLOAD_BUF_SIZE 4096
 
 static const char *TAG =
     "ota_downloader";
+
+
 
 static esp_err_t ota_http_open_final(
     esp_http_client_handle_t client,
@@ -92,12 +95,14 @@ esp_err_t ota_downloader_start(
     {
         .url = url,
 
-      
         .crt_bundle_attach =
             esp_crt_bundle_attach,
 
         .timeout_ms = 10000,
+
+        .disable_auto_redirect = true,
     };
+
 
 
     esp_http_client_handle_t client =
