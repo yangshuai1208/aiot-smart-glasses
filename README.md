@@ -428,4 +428,9 @@ aiot-embodied-control-system
 docs/development_log.md
 ```
 
+
+### 项目升级计划
+
+详见 [第七阶段：低功耗与工程化升级计划](docs/low_power_and_upgrade_plan.md)。
+
 README 只保留当前有效工程状态和最终设计。
